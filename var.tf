@@ -74,31 +74,19 @@ variable "instances" {
       # Install Docker
       yum install -y docker
 
-      # Start Docker service
-      sudo service docker start
-
-      # Enable Docker service on boot
-      sudo chkconfig docker on
+      # Start and enable Docker service
+      service docker start
+      chkconfig docker on
 
       # Pull the Docker image
       sudo docker pull tom621/half_project:latest
 
-      # Verify the image has been pulled successfully
-      if [[ "$(sudo docker images -q tom621/half_project:latest 2> /dev/null)" == "" ]]; then
-        echo "Docker image pull failed, exiting."
-        exit 1
-      fi
+      # Remove existing container if any
+      sudo docker rm -f half_project
 
-      # Run the Docker container only after the image has been pulled successfully
+      # Run the Docker container
       sudo docker run -d --name=half_project -p 5001:5001 tom621/half_project:latest
 
-      # Check if the container is running
-      if [ "$(sudo docker ps -q -f name=half_project)" ]; then
-        echo "Docker container is running successfully."
-      else
-        echo "Docker container failed to start, exiting."
-        exit 1
-      fi
 
       EOF
     }
@@ -112,62 +100,48 @@ variable "instances" {
       # Install Docker
       yum install -y docker
 
-      # Start Docker service
-      sudo service docker start
-
-      # Enable Docker service on boot
-      sudo chkconfig docker on
+      # Start and enable Docker service
+      service docker start
+      chkconfig docker on
 
       # Pull the Docker image
       sudo docker pull tom621/half_project:latest
 
-      # Verify the image has been pulled successfully
-      if [[ "$(sudo docker images -q tom621/half_project:latest 2> /dev/null)" == "" ]]; then
-        echo "Docker image pull failed, exiting."
-        exit 1
-      fi
+      # Remove existing container if any
+      sudo docker rm -f half_project
 
-      # Run the Docker container only after the image has been pulled successfully
+      # Run the Docker container
       sudo docker run -d --name=half_project -p 5001:5001 tom621/half_project:latest
 
-      # Check if the container is running
-      if [ "$(sudo docker ps -q -f name=half_project)" ]; then
-        echo "Docker container is running successfully."
-      else
-        echo "Docker container failed to start, exiting."
-        exit 1
-      fi
 
       EOF
     }
     "instance-private-3" = {
       user_data = <<-EOF
-        #!/bin/bash
-  
-        # Update the system packages
-        sudo yum update -y
+      #!/bin/bash
 
-        # Install Docker
-        sudo yum install -y docker
+      # Update the system packages
+      yum update -y
 
-        # Start Docker service
-        sudo service docker start
+      # Install Docker
+      yum install -y docker
 
-        # Enable Docker service on boot
-        sudo chkconfig docker on
+      # Start and enable Docker service
+      service docker start
+      chkconfig docker on
 
+      # Pull the Grafana Docker image
+      sudo docker pull grafana/grafana
 
+      # Create Docker volume
+      sudo docker volume create mydata
 
-        # Pull a specific stable version of Grafana OSS Docker image
-        sudo docker pull grafana/grafana
+      # Remove existing Grafana container if any
+      sudo docker rm -f grafana
 
+      # Run the Grafana Docker container with data volume
+      sudo docker run -d --name=grafana -p 3000:3000 --mount source=mydata,target=/var/lib/grafana grafana/grafana
 
-        sudo docker volume create mydata
-
-
-        # Run Grafana Docker container with data volume
-        sudo docker run -d --name=grafana -p 3000:3000 --mount source=mydata,target=/var/lib/grafana grafana/grafana
-        
 
         
       EOF
