@@ -69,7 +69,7 @@ resource "aws_security_group" "allow_all_tcp_http_ssh" {
 
 module "web_instance" {
   source = "terraform-aws-modules/ec2-instance/aws"
-
+  depends_on = [ module.vpc ]
   for_each = var.instances
 
   name                   = each.key
