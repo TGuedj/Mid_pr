@@ -1,0 +1,33 @@
+# Base image
+FROM ubuntu:20.04
+
+# Install necessary dependencies
+RUN apt-get update && apt-get install -y \
+    wget \
+    curl \
+    software-properties-common \
+    apt-transport-https \
+    ca-certificates \
+    gnupg2 \
+    lsb-release \
+    systemd
+
+# Install Prometheus
+RUN mkdir /etc/prometheus
+WORKDIR /etc/prometheus
+RUN wget https://github.com/prometheus/prometheus/releases/download/v2.32.1/prometheus-2.32.1.linux-amd64.tar.gz && \
+    tar -xvf prometheus-2.32.1.linux-amd64.tar.gz && \
+    mv prometheus-2.32.1.linux-amd64 prometheus
+
+# Copy Prometheus config file
+COPY prometheus.yml /etc/prometheus/
+
+# Install Grafana
+RUN wget https://dl.grafana.com/oss/release/grafana_8.3.4_amd64.deb && \
+    dpkg -i grafana_8.3.4_amd64.deb
+
+# Expose necessary ports for Prometheus and Grafana
+EXPOSE 3000 8000 9090
+
+# Command to start both Prometheus and Grafana
+CMD grafana-server --homepath=/usr/share/grafana & /etc/prometheus/prometheus/prometheus --config.file=/etc/prometheus/prometheus.yml --web.listen-address=:8000
